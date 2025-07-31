@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>北京中兴物业管理地图</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body { 
+        margin: 0; 
+        padding: 0; 
+        width: 100%; 
+        height: 100%; 
+    }
+    #map-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    #map { 
+        width: 100%; 
+        height: 100%; 
+    }
+    .inset-map {
+        position: absolute;
+        width: 200px;
+        height: 150px;
+        background: #f9f9f9;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 1000;
+    }
+    .inset-map-title {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.85);
+        color: #333;
+        font-size: 14px;
+        padding: 4px 0;
+        font-weight: bold;
+        z-index: 1001;
+        pointer-events: none;
+    }
+    /* --- 这是修正并优化后的完整位置代码 --- */
+
+    /* 左上角 */
+    #inset-map-1 { top: 10px; left: 10px; }
+
+    /* 左侧中部 */
+    #inset-map-2 { 
+        top: 50%; 
+        left: 10px; 
+        transform: translateY(-50%); /* 垂直居中 */
+    }
+
+    /* 右上角 */
+    #inset-map-3 { top: 10px; right: 10px; }
+
+    /* 左下角 */
+    #inset-map-4 { bottom: 10px; left: 10px; }
+
+    /* 右侧中部 */
+    #inset-map-6 { 
+        top: 50%; 
+        right: 10px;
+        transform: translateY(-50%); /* 垂直居中 */
+    }
+
+    /* 右下角 */
+    #inset-map-5 { bottom: 10px; right: 10px; }
+    .legend {
+      position: absolute;
+      bottom: 10px;
+      right: 160px;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      font-size: 14px;
+      z-index: 9999;
+      line-height: 1.8;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 8px;
+      border: 2px solid;
+    }
+    .info-window { 
+        font-size: 14px; 
+        min-width: 280px; 
+        max-width: 320px;
+        padding: 12px;
+    }
+    .info-index {
+      display: inline-block;
+      background: #409EFF;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .amap-logo,
+    .amap-copyright {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+    .search-container {
+      position: absolute;
+      top: 1%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 8px 12px;
+      display: flex;
+      gap: 6px;
+    }
+    #search-input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 14px;
+      width: 180px;
+    }
+    #search-btn {
+      background: #409EFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    #search-btn:hover {
+      background: #1976D2;
+    }
+    .search-suggest-dialog {
+      position: fixed;
+      left: 50%;
+      top: 80px;
+      transform: translateX(-50%);
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      z-index: 3000;
+      min-width: 260px;
+      max-width: 400px;
+      max-height: 320px;
+      overflow-y: auto;
+      font-size: 15px;
+    }
+    .search-suggest-title {
+      padding: 10px 16px 6px 16px;
+      font-weight: bold;
+      color: #1976D2;
+      border-bottom: 1px solid #eee;
+      background: #f7faff;
+      border-radius: 8px 8px 0 0;
+    }
+    .search-suggest-item {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f2f2f2;
+      transition: background 0.2s;
+    }
+    .search-suggest-item:last-child {
+      border-bottom: none;
+    }
+    .search-suggest-item:hover, .search-suggest-item.active {
+      background: #e3f2fd;
+      color: #1976D2;
+    }
+  </style>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=55959b0d7e969e23da4ba2f55e7c87eb"></script>
+</head>
+<body>
+  <div id="map-container">
+    <div id="map"></div>
+    <div id="inset-map-1" class="inset-map"></div>
+    <div id="inset-map-2" class="inset-map"></div>
+    <div id="inset-map-3" class="inset-map"></div>
+    <div id="inset-map-4" class="inset-map"></div>
+    <div id="inset-map-5" class="inset-map"></div>
+    <div id="inset-map-6" class="inset-map"></div>
+    
+    <div class="legend">
+        <div><i class="legend-dot" style="background-color: #F44336; border-color: #B71C1C;"></i> 南部片区</div>
+        <div><i class="legend-dot" style="background-color: #4CAF50; border-color: #1B5E20;"></i> 中部片区</div>
+        <div><i class="legend-dot" style="background-color: #9C27B0; border-color: #4A148C;"></i> 北部片区</div>
+        <div><i class="legend-dot" style="background-color: #FFC107; border-color: #FF6F00;"></i> 西部片区</div>
+        <div><i class="legend-dot" style="background-color: #2196F3; border-color: #0D47A1;"></i> 东部片区</div>
+    </div>
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="输入项目名称搜索..." />
+      <button id="search-btn">搜索</button>
+    </div>
+  </div>
+
+  <script>
+    const map = new AMap.Map('map', {
+      zoom: 12,
+      center: [116.4, 39.9]
+    });
+
+    const regionStyles = {
+      "南部片区": { fillColor: '#F44336', strokeColor: '#B71C1C' },
+      "中部片区": { fillColor: '#4CAF50', strokeColor: '#1B5E20' },
+      "北部片区": { fillColor: '#9C27B0', strokeColor: '#4A148C' },
+      "西部片区": { fillColor: '#FFC107', strokeColor: '#FF6F00' },
+      "东部片区": { fillColor: '#2196F3', strokeColor: '#0D47A1' },
+      "默认":     { fillColor: '#9E9E9E', strokeColor: '#616161' }
+    };
+
+    const insetProjectNames = new Set([
+        "延庆办公区", "定陵机场", "南邵院区", "清河院区", "未来城办公区",
+        "良乡办公区", "总部基地办公区", "石榴庄周转房", "亦庄办公区", "霸州办公区"
+    ]);
+
+    // --- 核心改动 1: 定义自定义标签位置 ---
+    // 'text-anchor' 的可选值: 'start', 'center', 'end'
+    // offset 的值: [x, y]
+    const customLabelPositions = {
+        "延庆办公区":     { anchor: 'middle-top',   offset: [0, 15] },      // 下方
+        "定陵机场":       { anchor: 'middle-left',  offset: [15, 0] },      // 右侧
+        "南邵院区":       { anchor: 'top-left',  offset: [-60, -15] },      // 右侧
+        "总部基地办公区": { anchor: 'top-right',    offset: [-70, 15] },    // 左下
+        "良乡办公区":     { anchor: 'bottom-left',  offset: [15, -15] },    // 右上
+        "清河院区":       { anchor: 'bottom-left',  offset: [15, -15] },    // 右上
+        "未来城办公区":   { anchor: 'top-right',    offset: [-60, 15] },    // 左下
+        "霸州办公区":     { anchor: 'middle-top',   offset: [0, 15] },      // 下方
+        "石榴庄周转房":   { anchor: 'top-left',     offset: [15, 15] },     // 右下方
+        "亦庄办公区":     { anchor: 'bottom-right', offset: [-60, -25] }    // 左上方
+    };
+    // 为所有其他点设置一个默认的标签位置
+    const defaultLabelPosition = { anchor: 'middle-left', offset: [12, 0] };
+
+
+    const properties = [
+      // ... 您原来的数据，保持不变 ...
+      {序号: 1, 中心: "中兴西单物业中心", 项目名称: "西单办公区", 地址: "西城区西长安街86号", 经度: 116.3766, 纬度: 39.9061, 类型: "中部片区"},
+      {序号: 2, 中心: "中兴西单物业中心", 项目名称: "银座办公区", 地址: "西城区宣武门内大街8号", 经度: 116.3752, 纬度: 39.9024, 类型: "中部片区"},
+      {序号: 3, 中心: "中兴西单物业中心", 项目名称: "人保办公区", 地址: "西城区西长安街88号1-2层", 经度: 116.3755, 纬度: 39.9061, 类型: "中部片区"},
+      {序号: 4, 中心: "中兴白广路物业中心", 项目名称: "白广路办公区", 地址: "西城区白广路二条1号", 经度: 116.3577, 纬度: 39.8868, 类型: "南部片区"},
+      {序号: 5, 中心: "中兴白广路物业中心", 项目名称: "德源宿舍", 地址: "西城区德源胡同乙2号", 经度: 116.3575, 纬度: 39.8885, 类型: "南部片区"},
+      {序号: 6, 中心: "中兴白广路物业中心", 项目名称: "广安大厦办公区", 地址: "西城区广安门南街6-1号", 经度: 116.3508, 纬度: 39.8861, 类型: "南部片区"},
+      {序号: 7, 中心: "中兴未来城物业中心", 项目名称: "未来城办公区", 地址: "昌平区北七家镇滨河大道18号", 经度: 116.4635, 纬度: 40.1318, 类型: "北部片区"},
+      {序号: 8, 中心: "中兴电科院物业中心", 项目名称: "清河院区", 地址: "海淀区清河小营东路15号", 经度: 116.3474, 纬度: 40.0409, 类型: "北部片区"},
+      {序号: 9, 中心: "中兴电科院物业中心", 项目名称: "南邵院区", 地址: "昌平区南邵镇南中路16号", 经度: 116.2949, 纬度: 40.2059, 类型: "北部片区"},
+      {序号: 10, 中心: "中兴电力医院物业中心", 项目名称: "电力医院", 地址: "丰台区太平桥西里甲1号", 经度: 116.3157, 纬度: 39.8857, 类型: "西部片区"},
+      {序号: 11, 中心: "中兴工研院物业中心", 项目名称: "京印办公区", 地址: "丰台区开阳路8号京印国际项目名称", 经度: 116.3758, 纬度: 39.8684, 类型: "南部片区"},
+      {序号: 12, 中心: "中兴工研院物业中心", 项目名称: "华亨办公区", 地址: "西城区南滨河路31号华亨大厦", 经度: 116.3483, 纬度: 39.8808, 类型: "南部片区"},
+      {序号: 13, 中心: "中兴工研院物业中心", 项目名称: "良乡办公区", 地址: "房山区昊天北大街3号、13号", 经度: 116.1668, 纬度: 39.7666, 类型: "西部片区"},
+      {序号: 14, 中心: "中兴工研院物业中心", 项目名称: "霸州办公区", 地址: "霸州市扬芬港镇新城项目名称路南侧", 经度: 116.8805, 纬度: 39.1210, 类型: "东部片区"},
+      {序号: 15, 中心: "中兴都城物业中心", 项目名称: "都城办公区", 地址: "南横东街8号-都城大厦", 经度: 116.3840, 纬度: 39.8828, 类型: "南部片区"},
+      {序号: 16, 中心: "中兴都城物业中心", 项目名称: "陶然亭办公区", 地址: "西城区黑窑厂街18号", 经度: 116.3822, 纬度: 39.8814, 类型: "南部片区"},
+      {序号: 17, 中心: "中兴英大传媒物业中心", 项目名称: "英大传媒办公区", 地址: "东城区北京站西街19号", 经度: 116.420056, 纬度: 39.901899, 类型: "东部片区"},
+      {序号: 18, 中心: "中兴英大传媒物业中心", 项目名称: "英大国际办公区", 地址: "东城区建国门内大街乙18号楼", 经度: 116.4325, 纬度: 39.9071, 类型: "东部片区"},
+      {序号: 19, 中心: "中兴英大传媒物业中心", 项目名称: "东单办公区", 地址: "东城区建国门内大街28号民生金融项目名称B座7层及建国门内大街26号新闻大厦4层", 经度: 116.420689, 纬度: 39.907431, 类型: "东部片区"},
+      {序号: 20, 中心: "中兴英大传媒物业中心", 项目名称: "二里沟办公区", 地址: "西城区三里河路6号", 经度: 116.3350, 纬度: 39.9356, 类型: "西部片区"},
+      {序号: 21, 中心: "中兴国网物资物业中心", 项目名称: "国网物资办公区", 地址: "西城区六铺炕5号", 经度: 116.390896, 纬度: 39.953750, 类型: "北部片区"},
+      {序号: 22, 中心: "中兴国网物资物业中心", 项目名称: "学院南路办公区", 地址: "海淀区学院南路4号院", 经度: 116.3690, 纬度: 39.9578, 类型: "北部片区"},
+      {序号: 23, 中心: "中兴国网物资物业中心", 项目名称: "航星园办公区", 地址: "东城区和平里西街51号雍和宫壹项目名称A6座", 经度: 116.4195, 纬度: 39.9530, 类型: "北部片区"},
+      {序号: 24, 中心: "中兴国网物资物业中心", 项目名称: "枣林街办公区（原黑龙江办）", 地址: "西城区白广路甲6号", 经度: 116.359166, 纬度: 39.884240, 类型: "南部片区"},
+      {序号: 25, 中心: "中兴国网物资物业中心", 项目名称: "枣林街办公区（白广路评审中心）", 地址: "西城区白广路10号", 经度: 116.359395, 纬度: 39.883592, 类型: "南部片区"},
+      {序号: 26, 中心: "中兴数据物业中心", 项目名称: "亦庄办公区", 地址: "亦庄经济技术开发区经海五路68号院", 经度: 116.571144, 纬度: 39.783612, 类型: "东部片区"},
+      {序号: 27, 中心: "中兴中再物业中心", 项目名称: "中再大厦办公区", 地址: "西城区骡马市大街18号", 经度: 116.3789, 纬度: 39.8888, 类型: "南部片区"},
+      {序号: 28, 中心: "中兴中再物业中心", 项目名称: "太平金融办公区", 地址: "西城区骡马市大街16号", 经度: 116.3807, 纬度: 39.8888, 类型: "南部片区"},
+      {序号: 29, 中心: "中兴中再物业中心", 项目名称: "南线阁应急中心办公区", 地址: "西城区牛街街道南线阁乙35号", 经度: 116.3525, 纬度: 39.8861, 类型: "南部片区"},
+      {序号: 30, 中心: "中兴中再物业中心", 项目名称: "新源物资办公区", 地址: "西城区牛街街道南线阁甲35号", 经度: 116.3530, 纬度: 39.8863, 类型: "南部片区"},
+      {序号: 31, 中心: "中兴中再物业中心", 项目名称: "安德里办公区", 地址: "东城区安德里北街甲21号", 经度: 116.392443, 纬度: 39.957228, 类型: "北部片区"},
+      {序号: 32, 中心: "中兴交通服务中心", 项目名称: "交通服务区", 地址: "西城区西长安街86号", 经度: 116.3771, 纬度: 39.9063, 类型: "中部片区"},
+      {序号: 33, 中心: "中兴后勤保障中心", 项目名称: "原西北办", 地址: "丰台区太平桥街道天伦北里小区17号楼", 经度: 116.346368, 纬度: 39.871331, 类型: "南部片区"},
+      {序号: 34, 中心: "中兴后勤保障中心", 项目名称: "原湖北办", 地址: "海淀区红莲东村55号", 经度: 116.362275, 纬度: 39.954524, 类型: "北部片区"},
+      {序号: 35, 中心: "中兴后勤保障中心", 项目名称: "文华员工宿舍", 地址: "西城区文华胡同21号院", 经度: 116.3660, 纬度: 39.9050, 类型: "中部片区"},
+      {序号: 36, 中心: "中兴后勤保障中心", 项目名称: "莲花池周转房", 地址: "丰台区莲花池南里甲9号", 经度: 116.3124, 纬度: 39.8899, 类型: "西部片区"},
+      {序号: 37, 中心: "中兴后勤保障中心", 项目名称: "夕照寺员工宿舍", 地址: "东城区夕照寺大街14号院2号楼角楼", 经度: 116.4501, 纬度: 39.8887, 类型: "东部片区"},
+      {序号: 38, 中心: "中兴后勤保障中心", 项目名称: "灯草胡同", 地址: "东城区东四南大街灯草胡同37号院", 经度:116.4221, 纬度: 39.9213, 类型: "东部片区"},
+      {序号: 39, 中心: "中兴西局物业中心", 项目名称: "西局周转房", 地址: "丰台北路69号", 经度: 116.297024, 纬度: 39.866858, 类型: "西部片区"},
+      {序号: 40, 中心: "中兴广联物业中心", 项目名称: "英大信托办公区", 地址: "东城区南竹杆胡同109-111号", 经度: 116.4335, 纬度: 39.9284, 类型: "东部片区"},
+      {序号: 41, 中心: "中兴广联物业中心", 项目名称: "经研院办公区", 地址: "西城区前半壁街64号", 经度: 116.3602, 纬度: 39.9380, 类型: "北部片区"},
+      {序号: 42, 中心: "中兴广联物业中心", 项目名称: "国网人才办公区", 地址: "海淀区北洼路25号院2号楼", 经度: 116.3012, 纬度: 39.9335, 类型: "西部片区"},
+      {序号: 43, 中心: "中兴广联物业中心", 项目名称: "东直门办公区", 地址: "朝阳区东直门外左家庄街道厚道酒店东南侧", 经度: 116.4439, 纬度: 39.9475, 类型: "东部片区"},
+      {序号: 44, 中心: "中兴广联物业中心", 项目名称: "光华西里办公区", 地址: "朝阳区光华西里甲6号", 经度: 116.4508, 纬度: 39.9119, 类型: "东部片区"},
+      {序号: 45, 中心: "中兴槐柏树物业中心", 项目名称: "槐柏树周转房", 地址: "西城区槐柏树街15号", 经度: 116.3585, 纬度: 39.8964, 类型: "南部片区"},
+      {序号: 46, 中心: "中兴石榴庄物业中心", 项目名称: "石榴庄周转房", 地址: "丰台区榴乡路84号院鲁能美高1号C座", 经度: 116.424480, 纬度: 39.845283, 类型: "东部片区"},
+      {序号: 47, 中心: "中兴国网国际物业中心", 项目名称: "国网国际办公区", 地址: "西长安街15号民航大厦", 经度: 116.3785, 纬度: 39.9077, 类型: "中部片区"},
+      {序号: 48, 中心: "中兴数科物业中心", 项目名称: "永定门办公区", 地址: "东城区永定门外东革新里42号", 经度: 116.4028, 纬度: 39.8714, 类型: "南部片区"},
+      {序号: 49, 中心: "中兴数科物业中心", 项目名称: "普明大厦办公区", 地址: "西城区广内大街308号", 经度: 116.3576, 纬度: 39.8888, 类型: "南部片区"},
+      {序号: 50, 中心: "中兴数科物业中心", 项目名称: "小星胡同宿舍", 地址: "西城区广安门内小星胡同11号", 经度: 116.3586, 纬度: 39.8901, 类型: "南部片区"},
+      {序号: 51, 中心: "中兴通航物业中心", 项目名称: "定陵机场", 地址: "昌平区十三陵镇定陵机场路8号", 经度: 116.2397, 纬度: 40.2871, 类型: "北部片区"},
+      {序号: 52, 中心: "中兴通航物业中心", 项目名称: "延庆办公区", 地址: "北京市延庆区张山营镇东门营村电厂", 经度: 115.7926, 纬度: 40.4497, 类型: "北部片区"},
+      {序号: 53, 中心: "中兴国康物业中心", 项目名称: "总部基地办公区", 地址: "丰台区南四环西路188号18区16号楼", 经度: 116.2982, 纬度: 39.8332, 类型: "西部片区"},
+      {序号: 54, 中心: "食品集中加工中心（建设中）", 项目名称: "餐饮服务中心（建设中）", 地址: "丰台区南苑路112号", 经度: 116.407576, 纬度: 39.815982, 类型: "南部片区"}
+    ];
+
+    const allLabels = [];
+
+    // 1. 建立项目名称到 marker 的映射
+    const markerMap = {};
+    const markerList = []; // 便于后续遍历
+    let currentHighlight = null;
+
+    function getMarkerSvg(fill, stroke, highlight = false) {
+      if (highlight) {
+        // 高亮时加大、加粗描边
+        return `<svg viewBox="0 0 1024 1024" width="24" height="24">
+          <circle cx="512" cy="512" r="450" fill="${fill}" stroke="#FFD600" stroke-width="120"/>
+          <circle cx="512" cy="512" r="350" fill="${fill}" stroke="${stroke}" stroke-width="60"/>
+        </svg>`;
+      } else {
+        return `<svg viewBox="0 0 1024 1024" width="16" height="16">
+          <circle cx="512" cy="512" r="450" fill="${fill}" stroke="${stroke}" stroke-width="80"/>
+        </svg>`;
+      }
+    }
+
+    properties.forEach((p, idx) => {
+      const style = regionStyles[p.类型] || regionStyles["默认"];
+      let marker = new AMap.Marker({
+        map: map,
+        position: [p.经度, p.纬度],
+        content: getMarkerSvg(style.fillColor, style.strokeColor),
+        offset: new AMap.Pixel(-8, -8),
+        extData: p
+      });
+      markerList.push(marker);
+
+        const positionConfig = customLabelPositions[p.项目名称] || defaultLabelPosition;
+        const textLabel = new AMap.Text({
+            map: map,
+            text: p.项目名称,
+            position: [p.经度, p.纬度],
+            offset: new AMap.Pixel(positionConfig.offset[0], positionConfig.offset[1]),
+            style: {
+                'background-color': 'rgba(255, 255, 255, 0.7)',
+                'border': 'none',
+                'padding': '1px 3px',
+                'border-radius': '2px',
+                'font-size': '12px',
+                'color': '#333',
+                'text-anchor': positionConfig.anchor
+            }
+        });
+        allLabels.push(textLabel);
+        
+        const content = `
+        <div class="info-window">
+            <div class="info-index">#${p.序号}</div><br>
+            项目名称：${p.项目名称}<br>
+            物业中心：${p.中心}<br>
+            地址：${p.地址}<br>
+            类型：<span>${p.类型}</span>
+            <div class="info-map-image">
+                <img src="img/${p.项目名称}.png" alt="${p.项目名称}地图" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                     style="width: 100%; max-width: 200px; height: auto; margin-top: 8px; border-radius: 4px;">
+                <div class="no-image-placeholder" style="display: none; text-align: center; color: #999; font-size: 12px; margin-top: 8px;">
+                    暂无地图图片
+                </div>
+            </div>
+        </div>`;
+        const infoWindow = new AMap.InfoWindow({ content: content, offset: new AMap.Pixel(0, -10) });
+
+      markerMap[p.项目名称] = markerMap[p.项目名称] || [];
+      markerMap[p.项目名称].push({ marker, infoWindow, style, data: p, label: textLabel });
+
+        marker.on('click', (e) => {
+        highlightMarker(marker, style);
+        infoWindow.close();
+        
+        // 隐藏当前标记点的文字标签
+        textLabel.hide();
+        
+        let once = function() {
+          infoWindow.open(map, marker.getPosition());
+          // 监听弹窗关闭事件，恢复文字标签显示
+          infoWindow.on('close', () => {
+            textLabel.show();
+          });
+          map.off('moveend', once);
+        };
+        map.on('moveend', once);
+            map.setCenter(e.target.getPosition());
+            map.panBy(0, -100);
+        });
+    });
+
+    // 高亮函数
+    function highlightMarker(marker, style) {
+      if (currentHighlight && currentHighlight.marker) {
+        // 恢复上一个
+        currentHighlight.marker.setContent(getMarkerSvg(currentHighlight.style.fillColor, currentHighlight.style.strokeColor));
+      }
+      marker.setContent(getMarkerSvg(style.fillColor, style.strokeColor, true));
+      currentHighlight = { marker, style };
+    }
+
+    // 搜索功能（模糊搜索）
+    const searchInput = document.getElementById('search-input');
+    let suggestDialog = null;
+    let suggestList = [];
+    let suggestActiveIdx = -1;
+
+    // 自动补全建议弹窗
+    function showSuggestDialog(found) {
+      if (suggestDialog) document.body.removeChild(suggestDialog);
+      suggestDialog = document.createElement('div');
+      suggestDialog.className = 'search-suggest-dialog';
+      suggestDialog.innerHTML = `<div class="search-suggest-title">请选择项目</div>` +
+        found.map((item, idx) =>
+          `<div class="search-suggest-item" data-idx="${idx}">${item.data.项目名称}（${item.data.地址}）</div>`
+        ).join('');
+      document.body.appendChild(suggestDialog);
+
+      // 位置跟随输入框
+      const rect = searchInput.getBoundingClientRect();
+      suggestDialog.style.left = (rect.left + rect.width / 2) + 'px';
+      suggestDialog.style.top = (rect.bottom + 8 + window.scrollY) + 'px';
+      suggestDialog.style.transform = 'translateX(-50%)';
+
+      // 事件
+      suggestDialog.querySelectorAll('.search-suggest-item').forEach(div => {
+        div.onclick = function() {
+          const idx = +this.getAttribute('data-idx');
+          selectSuggest(idx);
+        };
+      });
+    }
+
+    // 选中建议项
+    function selectSuggest(idx) {
+      if (!suggestList[idx]) return;
+      const { marker, infoWindow, style, data, label } = suggestList[idx];
+      highlightMarker(marker, style);
+      searchInput.value = data.项目名称;
+      hideSuggestDialog();
+
+      // 先关闭所有 InfoWindow，防止多次弹窗
+      infoWindow.close();
+
+      // 隐藏文字标签
+      if (label) label.hide();
+
+      // 监听地图移动结束后再弹窗
+      let once = function() {
+        infoWindow.open(map, marker.getPosition());
+        // 监听弹窗关闭事件，恢复文字标签显示
+        if (label) {
+          infoWindow.on('close', () => {
+            label.show();
+          });
+        }
+        map.off('moveend', once);
+      };
+      map.on('moveend', once);
+      map.setZoomAndCenter(16, marker.getPosition());
+    }
+
+    // 隐藏建议弹窗
+    function hideSuggestDialog() {
+      if (suggestDialog) {
+        document.body.removeChild(suggestDialog);
+        suggestDialog = null;
+        suggestList = [];
+        suggestActiveIdx = -1;
+      }
+    }
+
+    // 输入时自动补全
+    searchInput.addEventListener('input', function() {
+      const val = this.value.trim();
+      if (!val) {
+        hideSuggestDialog();
+        return;
+      }
+      // 模糊查找
+      let found = [];
+      Object.keys(markerMap).forEach(name => {
+        if (name.includes(val)) {
+          found = found.concat(markerMap[name]);
+        }
+      });
+      if (found.length === 0) {
+        hideSuggestDialog();
+        return;
+      }
+      suggestList = found;
+      suggestActiveIdx = -1;
+      showSuggestDialog(found);
+    });
+
+    // 键盘事件支持上下键和回车
+    searchInput.addEventListener('keydown', function(e) {
+      if (!suggestList.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        suggestActiveIdx = (suggestActiveIdx + 1) % suggestList.length;
+        updateSuggestActive();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        suggestActiveIdx = (suggestActiveIdx - 1 + suggestList.length) % suggestList.length;
+        updateSuggestActive();
+      } else if (e.key === 'Enter') {
+        if (suggestActiveIdx >= 0) {
+          selectSuggest(suggestActiveIdx);
+          e.preventDefault();
+        } else {
+          // 没有选中时，直接用第一个
+          selectSuggest(0);
+          e.preventDefault();
+        }
+      } else if (e.key === 'Escape') {
+        hideSuggestDialog();
+      }
+    });
+
+    // 鼠标点击输入框外关闭弹窗
+    // 只绑定一次
+    if (!window._searchSuggestDialogHandler) {
+      window._searchSuggestDialogHandler = function handler(e) {
+        if (suggestDialog && !suggestDialog.contains(e.target) && e.target !== searchInput) {
+          hideSuggestDialog();
+        }
+      };
+      document.addEventListener('mousedown', window._searchSuggestDialogHandler);
+    }
+
+    // 高亮当前选中项
+    function updateSuggestActive() {
+      if (!suggestDialog) return;
+      suggestDialog.querySelectorAll('.search-suggest-item').forEach((div, idx) => {
+        if (idx === suggestActiveIdx) {
+          div.classList.add('active');
+          div.scrollIntoView({ block: 'nearest' });
+        } else {
+          div.classList.remove('active');
+        }
+      });
+    }
+
+    // 搜索按钮点击时，立即跳转、居中、高亮marker并弹窗
+    // 重新做一次模糊查找，直接选中第一个
+    // 保证自动补全弹窗关闭
+
+    document.getElementById('search-btn').onclick = function() {
+      const val = searchInput.value.trim();
+      if (!val) return;
+      // 重新模糊查找
+      let found = [];
+      Object.keys(markerMap).forEach(name => {
+        if (name.includes(val)) {
+          found = found.concat(markerMap[name]);
+        }
+      });
+      if (found.length === 0) {
+        alert('未找到该项目名称，请检查输入！');
+        hideSuggestDialog();
+        return;
+      }
+      suggestList = found;
+      suggestActiveIdx = -1;
+      // 直接选中第一个
+      selectSuggest(0);
+    };
+   // 中心区域
+    // 四角圆角矩形自动生成
+    // 生成圆弧点函数（只生成一次，所有区域共用）
+    function arcPoints(cx, cy, r, start, end, seg) {
+      const pts = [];
+      for (let i = 0; i <= seg; i++) {
+        const theta = start + (end - start) * (i / seg);
+        const x = cx + r * Math.cos(theta);
+        const y = cy + r * Math.sin(theta);
+        pts.push([parseFloat(x.toFixed(6)), parseFloat(y.toFixed(6))]);
+      }
+      return pts;
+    }
+    const leftDown = [116.356997, 39.899450];
+    const leftUp = [116.356997, 39.932417];
+    const rightUp = [116.406267, 39.932417];
+    const rightDown = [116.406267, 39.899450];
+    const r = 0.001;
+    const seg = 12;
+    const c1 = [leftDown[0] + r, leftDown[1] + r];      // 左下
+    const c4 = [rightDown[0] - r, rightDown[1] + r];    // 右下
+    const c3 = [rightUp[0] - r, rightUp[1] - r];        // 右上
+    const c2 = [leftUp[0] + r, leftUp[1] - r];          // 左上
+    const arc1 = arcPoints(c1[0], c1[1], r, Math.PI, 1.5 * Math.PI, seg);         // 左下
+    const arc4 = arcPoints(c4[0], c4[1], r, 1.5 * Math.PI, 2 * Math.PI, seg);     // 右下
+    const arc3 = arcPoints(c3[0], c3[1], r, 0, 0.5 * Math.PI, seg);               // 右上
+    const arc2 = arcPoints(c2[0], c2[1], r, 0.5 * Math.PI, Math.PI, seg);         // 左上
+    // 中心区
+    const centralAreaPath = [
+      ...arc1,
+      ...arc4.slice(1),
+      ...arc3.slice(1),
+      ...arc2.slice(1)
+    ];
+    const centralAreaStyle = regionStyles["中部片区"];
+    const centralArea = new AMap.Polygon({
+        map: map,
+        path: centralAreaPath,
+        fillColor: centralAreaStyle.fillColor,
+        fillOpacity: 0.35,
+        strokeColor: '#000000',
+        strokeWeight: 3,
+        strokeOpacity: 1,
+        zIndex: 1000
+    });
+    const midIdx = Math.floor(seg / 2);
+    const mid1 = arc1[midIdx];
+    const mid2 = arc2[midIdx];
+    const mid3 = arc3[midIdx];
+    const mid4 = arc4[midIdx];
+
+    // 分割每个圆弧为两半
+    const arc1_left = arc1.slice(0, midIdx+1); // arc1[0]~mid1
+    const arc1_right = arc1.slice(midIdx);     // mid1~arc1[end]
+    const arc2_top = arc2.slice(0, midIdx+1);  // arc2[0]~mid2
+    const arc2_bottom = arc2.slice(midIdx);    // mid2~arc2[end]
+    const arc3_right = arc3.slice(0, midIdx+1); // arc3[0]~mid3
+    const arc3_left = arc3.slice(midIdx);     // mid3~arc3[end]
+    const arc4_bottom = arc4.slice(0, midIdx+1);  // arc4[0]~mid4
+    const arc4_top = arc4.slice(midIdx);    // mid4~arc4[end]
+
+  
+    // 计算以mid1、mid2、mid3、mid4四个点为圆的圆心坐标
+    function calculateCircleCenter(p1, p2, p3, p4) {
+      // 使用三点法计算圆心
+      // 选择前三个点计算圆心
+      const x1 = p1[0], y1 = p1[1];
+      const x2 = p2[0], y2 = p2[1];
+      const x3 = p3[0], y3 = p3[1];
+      
+      // 计算圆心坐标
+      const A = 2 * (x2 - x1);
+      const B = 2 * (y2 - y1);
+      const C = 2 * (x3 - x1);
+      const D = 2 * (y3 - y1);
+      const E = x2 * x2 + y2 * y2 - x1 * x1 - y1 * y1;
+      const F = x3 * x3 + y3 * y3 - x1 * x1 - y1 * y1;
+      
+      const det = A * D - B * C;
+      if (Math.abs(det) < 1e-10) {
+        console.log('三点共线，无法计算圆心');
+        return null;
+      }
+      
+      const centerX = (E * D - F * B) / det;
+      const centerY = (A * F - C * E) / det;
+      
+      return [centerX, centerY];
+    }
+
+    // 计算圆心
+    const circleCenter = calculateCircleCenter(mid1, mid2, mid3, mid4);
+    
+    // 声明大圆点数组（在圆心计算之前）
+    let bigCirclePoints = [];
+         
+      
+      // 计算半径（到mid1的距离）
+      const radius = Math.sqrt(
+        Math.pow(circleCenter[0] - mid1[0], 2) + 
+        Math.pow(circleCenter[1] - mid1[1], 2)
+      ); 
+      
+      // 计算半径（圆心到目标点的距离）
+      const bigRadius = 0.9
+      
+      
+      // 生成大圆的路径点（使用修正方法避免椭圆变形）
+      bigCirclePoints.length = 0; // 清空数组
+      const circleSegments = 500; // 增加精度
+      
+      // 计算经纬度修正因子（在纬度39度附近）
+      const latCorrection = 1 / Math.cos(circleCenter[1] * Math.PI / 180);
+      
+      for (let i = 0; i <= circleSegments; i++) {
+        const angle = (2 * Math.PI * i) / circleSegments;
+        
+        // 使用修正的半径计算
+        const deltaLng = bigRadius * Math.cos(angle) * latCorrection;
+        const deltaLat = bigRadius * Math.sin(angle);
+        
+        const lng = circleCenter[0] + deltaLng;
+        const lat = circleCenter[1] + deltaLat;
+        
+        bigCirclePoints.push([lng, lat]);
+      }
+      
+            
+      
+
+      
+      // 创建大圆
+      const bigCircle = new AMap.Polygon({
+        map: map,
+        path: bigCirclePoints,
+        fillColor: 'transparent',
+        strokeColor: '#FF0000',
+        strokeWeight: 3,
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid'
+      });
+      
+
+    
+
+
+      
+      // 定义大圆的四个弧线段（在区域路径定义之前）
+      let leftarc = []; // 左弧线，稍后填充
+      let rightarc = []; // 右弧线，稍后填充
+      let uparc = []; // 上弧线，稍后填充
+      let downarc = []; // 下弧线，稍后填充
+      
+      // 临时填充弧线（在区域路径定义之前）
+      if (typeof bigCirclePoints !== 'undefined' && bigCirclePoints && bigCirclePoints.length > 0) {
+        leftarc = bigCirclePoints.slice(197, 339); //  左弧线            
+        // 提取右半圆弧
+        const rightHalfArc1 = bigCirclePoints.slice(0, 57).reverse(); // 
+        const rightHalfArc2 = bigCirclePoints.slice(387, 500).reverse();          
+        // 合并右半圆弧
+        rightarc = [...rightHalfArc1, ...rightHalfArc2];
+        uparc = bigCirclePoints.slice(56, 198); // 上弧线 
+        downarc = bigCirclePoints.slice(338, 388); // 下弧线 
+      }
+
+    
+    // 西部区域
+    const WestAreaPath = [
+      ...arc1_left.reverse(),
+      ...arc2_bottom.slice().reverse(),
+      ...leftarc
+    ];
+
+    const WestAreaStyle = regionStyles["西部片区"];
+    const WestArea = new AMap.Polygon({
+        map: map,
+        path: WestAreaPath,
+        fillColor: WestAreaStyle.fillColor,
+        fillOpacity: 0.35,
+        strokeColor: 'transparent',
+        strokeWeight: 0
+    });
+    // 北部区域
+    const NorthAreaPath = [
+      ...arc2_top.reverse(),
+      ...arc3_left.reverse(),
+      ...uparc
+    ];
+    const NorthAreaStyle = regionStyles["北部片区"];
+    const NorthArea = new AMap.Polygon({
+        map: map,
+        path: NorthAreaPath,
+        fillColor: NorthAreaStyle.fillColor,
+        fillOpacity: 0.35,
+        strokeColor: 'transparent',
+        strokeWeight: 0
+    });
+    
+    
+    // 东部区域
+    const EastAreaPath = [
+      ...arc3_right.reverse(),
+      ...arc4_top.reverse(),
+      ...rightarc.reverse(),
+
+    ];
+
+    
+    const EastAreaStyle = regionStyles["东部片区"];
+    const EastArea = new AMap.Polygon({
+        map: map,
+        path: EastAreaPath,
+        fillColor: EastAreaStyle.fillColor,
+        fillOpacity: 0.35,
+        strokeColor: 'transparent',
+        strokeWeight: 0
+    });
+    // 南部区域
+    const SouthAreaPath = [
+      ...arc4_bottom.reverse(),
+      ...arc1_right.reverse(),
+      ...downarc
+
+    ];
+
+
+    const SouthAreaStyle = regionStyles["南部片区"];
+    const SouthArea = new AMap.Polygon({
+        map: map,
+        path: SouthAreaPath,
+        fillColor: SouthAreaStyle.fillColor,
+        fillOpacity: 0.35,
+        strokeColor: 'transparent',
+        strokeWeight: 0
+    });
+
+
+
+
+    
+
+
+
+    // 主地图初始加载时最大化显示extendarea区域
+    map.setBounds(new AMap.Bounds([116.296464, 39.968477], [116.461802, 39.857013]), false, [0, 0, 0, 0]);
+
+    // 添加四个区域的斜边线条
+    map.on('complete', function() {
+      // 定义四个区域的斜边起点和终点
+      const diagonalLines = [
+        // 西部区域斜边：从西北角到西南角
+        {
+          path: [bigCirclePoints[197], mid2]
+        },
+        // 北部区域斜边：从东北角到西北角
+        {
+          path: [bigCirclePoints[56], mid3]
+        },
+        // 东部区域斜边：从东南角到东北角
+        {
+          path: [bigCirclePoints[387], mid4]
+        },
+        // 南部区域斜边：从西南角到东南角
+        {
+          path: [bigCirclePoints[338], mid1]
+        }
+      ];
+
+      // 创建斜边线条
+      diagonalLines.forEach(lineConfig => {
+        const polyline = new AMap.Polyline({
+          map: map,
+          path: lineConfig.path,
+          strokeColor: '#000000',
+          strokeWeight: 3,
+          strokeStyle: 'solid',
+          strokeOpacity: 1,
+          zIndex: 1000
+        });
+      });
+    });
+
+    const labelZoomThreshold = 13;
+    function updateLabelsVisibility() {
+        const currentZoom = map.getZoom();
+        const showLabels = currentZoom >= labelZoomThreshold;
+        allLabels.forEach(label => {
+            showLabels ? label.show() : label.hide();
+        });
+    }
+    map.on('zoomchange', updateLabelsVisibility);
+    updateLabelsVisibility();
+
+    // 小地图标记点标签自定义offset配置
+    const insetLabelOffsets = {
+      '延庆办公区': [12, 0],
+      '定陵机场': [12, 0],
+      '南邵院区': [12, 0],
+      '清河院区': [12, 0],
+      '未来城办公区': [-50, 15],
+      '良乡办公区': [12, 0],
+      '总部基地办公区': [-50, 15],
+      '霸州办公区': [12, 0],
+      '石榴庄周转房': [12, 0],
+      '亦庄办公区': [-50, 15]
+      // 如需微调可在此处调整每个点的offset
+    };
+
+
+    const insetMapsConfig = [
+        { id: 'inset-map-1', name: '延庆远郊区', color: regionStyles["北部片区"].fillColor, points: ['延庆办公区'], priority: 'high' },
+        { id: 'inset-map-2', name: '昌平西北区', color: regionStyles["北部片区"].fillColor, points: ['定陵机场', '南邵院区'] },
+        { id: 'inset-map-3', name: '海淀及昌平南区', color: regionStyles["北部片区"].fillColor, points: ['清河院区', '未来城办公区'] },
+        { id: 'inset-map-4', name: '西南区', color: regionStyles["西部片区"].fillColor, points: ['良乡办公区', '总部基地办公区'] },
+        { id: 'inset-map-5', name: '霸州区', color: regionStyles["东部片区"].fillColor, points: ['霸州办公区'], priority: 'high' },
+        { id: 'inset-map-6', name: '东南区', color: regionStyles["东部片区"].fillColor, points: ['石榴庄周转房', '亦庄办公区'] }
+    ];
+
+    // 创建小地图时插入底色层
+    // CSS样式调整
+    const style = document.createElement('style');
+    style.innerHTML = `
+.inset-map-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 8px;
+  opacity: 0.18;
+  z-index: 10;
+  pointer-events: none;
+}
+.inset-map-marker, .inset-map-label {
+  position: absolute;
+  z-index: 20;
+}
+.inset-map-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 12px;
+  z-index: 15;
+  background: rgba(255,255,255,0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+}`;
+    document.head.appendChild(style);
+
+    function createInsetMap(config) {
+        const container = document.getElementById(config.id);
+
+      // 2. 先插入底色层（立即显示，不等待地图加载）
+      const bgDiv = document.createElement('div');
+      bgDiv.className = 'inset-map-bg';
+      bgDiv.style.background = config.color;
+      container.appendChild(bgDiv);
+
+      // 4. 立即插入标题（不等待地图加载）
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'inset-map-title';
+        titleDiv.innerText = config.name;
+        container.appendChild(titleDiv);
+
+      // 5. 添加加载状态指示器（仅对高优先级地图）
+      if (config.priority === 'high') {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'inset-map-loading';
+        loadingDiv.innerText = '加载中...';
+        container.appendChild(loadingDiv);
+      }
+
+      // 1. 创建地图内容（优化配置）
+      const mapOptions = {
+            zoomEnable: false, dragEnable: false, doubleClickZoom: false,
+            keyboardEnable: false, scrollWheel: false, showIndoorMap: false,
+        isHotspot: false, 
+        features: ['bg', 'road'], // 移除building，减少加载内容
+        logoPosition: 'bottom-right',
+        preloadMode: true, // 启用预加载模式
+        mapStyle: 'amap://styles/normal' // 使用标准样式，加载更快
+      };
+
+      // 为高优先级的小地图（延庆、霸州）添加特殊优化
+      if (config.priority === 'high') {
+        mapOptions.features = ['bg', 'road', 'building', 'point', 'boundary']; // 加载更多要素
+        mapOptions.mapStyle = 'amap://styles/normal'; // 使用标准样式，显示更多细节
+        mapOptions.showLabel = true; // 显示地图标注
+      }
+
+      const insetMap = new AMap.Map(config.id, mapOptions);
+
+      // 3. 标记点和文字用AMap.Marker和AMap.Text，缩小
+        insetMap.on('complete', function() {
+        // 移除加载指示器
+        const loadingDiv = container.querySelector('.inset-map-loading');
+        if (loadingDiv) {
+          container.removeChild(loadingDiv);
+        }
+
+            const insetMarkers = [];
+        if (Array.isArray(config.points)) {
+            config.points.forEach(pointName => {
+                const pointData = properties.find(p => p.项目名称 === pointName);
+                if (pointData) {
+                    const style = regionStyles[pointData.类型] || regionStyles["默认"];
+              const markerSvg = `<svg viewBox="0 0 1024 1024" width="10" height="10"><circle cx="512" cy="512" r="450" fill="${style.fillColor}" stroke="${style.strokeColor}" stroke-width="80"/></svg>`;
+                    const marker = new AMap.Marker({
+                map: insetMap,
+                        position: [pointData.经度, pointData.纬度],
+                        content: markerSvg,
+                offset: new AMap.Pixel(-5, -5),
+                        title: pointData.项目名称
+                    });
+                    insetMarkers.push(marker);
+              // 缩小文字，使用自定义offset
+              const offset = insetLabelOffsets[pointData.项目名称] || [10, 0];
+                    const textLabel = new AMap.Text({
+                        map: insetMap,
+                        text: pointData.项目名称,
+                        position: [pointData.经度, pointData.纬度],
+                offset: new AMap.Pixel(offset[0], offset[1]),
+                        style: {
+                  'font-size': '10px',
+                            'color': '#333',
+                  'background-color': 'rgba(255,255,255,0.7)',
+                            'border': 'none',
+                  'padding': '0 2px',
+                  'border-radius': '2px'
+                        }
+                    });
+                }
+            });
+        }
+            if (insetMarkers.length === 1) {
+          // 为霸州区和延庆区设置更小的缩放级别，显示更多周围参考信息
+          let zoomLevel = 16;
+          if (config.priority === 'high') {
+            zoomLevel = 12; // 延庆区和霸州区使用更小的缩放级别，显示更多周围信息
+          }
+          insetMap.setZoomAndCenter(zoomLevel, insetMarkers[0].getPosition());
+        } else if (insetMarkers.length > 1) {
+          insetMap.setFitView(insetMarkers, true, [40, 40, 40, 40]);
+            }
+        });
+    }
+
+    // 优化小地图加载顺序：先加载高优先级的，再加载其他的
+    const highPriorityMaps = insetMapsConfig.filter(config => config.priority === 'high');
+    const normalMaps = insetMapsConfig.filter(config => !config.priority);
+    
+    // 立即创建高优先级的小地图
+    highPriorityMaps.forEach(createInsetMap);
+    
+    // 延迟创建其他小地图，避免同时加载过多地图
+    setTimeout(() => {
+      normalMaps.forEach(createInsetMap);
+    }, 200);
+   map.on('complete', () => {
+    // 主图 logo 强制隐藏
+    document.querySelectorAll('.amap-logo, .amap-copyright').forEach(el => {
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    });
+  });
+
+  // 小地图 logo 强制隐藏
+  setTimeout(() => {
+    document.querySelectorAll('.inset-map .amap-logo, .inset-map .amap-copyright').forEach(el => {
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    });
+  }, 1500); // 适当延迟，保证 inset map 加载完成
+
+  </script>
+</body>
+</html>
